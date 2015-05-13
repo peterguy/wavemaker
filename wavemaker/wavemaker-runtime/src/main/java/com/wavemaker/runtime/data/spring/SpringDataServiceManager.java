@@ -302,7 +302,15 @@ public class SpringDataServiceManager implements DataServiceManager {
             //The following logic intends to display a sensible message for the user when a column contains a value whose length
             //exceeds the maximum length allowed in the database.  The logic has been tested on MySQL, Postgres, Oracle and
             //SQLServer so far.
-            if (ex.getCause() instanceof java.sql.BatchUpdateException) { //Oracle
+			// this exception handling can also be triggered by other problems,
+			// like failure to connect to the database, in which case getCause() may be null
+			if (ex.getCause() == null) {
+				String msg = ex.getMessage();
+				if(msg != null)
+					throw new WMRuntimeException(msg);
+				else
+					throw new WMRuntimeException(ex);
+			} if (ex.getCause() instanceof java.sql.BatchUpdateException) { //Oracle
                 String msg = ((java.sql.BatchUpdateException)ex.getCause()).getNextException().getMessage();
                 if (msg != null) {
                     ex.printStackTrace();
