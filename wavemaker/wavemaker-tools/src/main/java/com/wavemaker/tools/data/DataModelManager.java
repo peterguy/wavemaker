@@ -648,7 +648,8 @@ public class DataModelManager {
     private void remove(DataModelKey key) {
         this.importedDataModels.remove(key.dataModelName);
         DataModelConfiguration cfg = this.dataModels.remove(key);
-        cfg.dispose();
+		if(cfg != null)
+			cfg.dispose();
         this.dataModelNames.removeValue(getProjectName(), key.dataModelName);
     }
 
