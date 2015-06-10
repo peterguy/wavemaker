@@ -353,6 +353,23 @@ public class DataModelManager {
         DataModelConfiguration cfg = getDataModel(dataModelName);
         cfg.deleteQuery(queryName);
         save(dataModelName, cfg, false, false);
+		
+		// saving the service definition results in the deleted query (called an operation in Service lingo)
+		// being added back in by DesignServiceManager::defineService for some reason (something to do with AbstractDeprecatedServiceDefinition)
+		// Instead of changing the behavior of defineService, which will affect lots of things,
+		// just re-delete the query/operation in the service and define the service again, which will rebuild servicedef.xml
+		Service svc = this.serviceManager.getService(dataModelName);
+		Operation delOper = null;
+		for(Operation oper : svc.getOperation()) {
+			if(oper.getName().equals(queryName)) {
+				delOper = oper;
+				break;
+			}
+		}
+		if(delOper != null) {
+			svc.getOperation().remove(delOper);
+			this.serviceManager.defineService(svc);
+		}
     }
 
     public void updateColumns(String dataModelName, String entityName, List<ColumnInfo> columns, List<PropertyInfo> properties) {
